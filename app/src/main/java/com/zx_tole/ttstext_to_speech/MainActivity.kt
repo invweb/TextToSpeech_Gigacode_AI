@@ -65,7 +65,7 @@ fun TTSApp() {
     val historyManager = remember { HistoryManager(context) }
     var history by remember { mutableStateOf(emptyList<String>()) }
     
-    // Загружаем историю после инициализации
+    // Load history after initialization
     LaunchedEffect(Unit) {
         history = historyManager.loadHistory()
     }
@@ -236,7 +236,7 @@ fun TTSApp() {
             }
         }
 
-        // История воспроизведений
+        // Playback history
         if (history.isNotEmpty()) {
             Text(
                 text = stringResource(R.string.history),
