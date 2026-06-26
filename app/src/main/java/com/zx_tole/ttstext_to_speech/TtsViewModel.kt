@@ -3,56 +3,60 @@ package com.zx_tole.ttstext_to_speech
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
-import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import java.util.Locale
 
-class TtsViewModel(private val context: Context) : ViewModel() {
-    private val prefs = context.getSharedPreferences("history_prefs", Context.MODE_PRIVATE)
-    private val maxHistorySize = 5
-    private val historyManager = HistoryManager(context)
-    
+class TtsViewModel(
+    private val repository: TtsRepository
+) : ViewModel() {
     private val _uiState = MutableStateFlow(TtsState())
     val uiState: StateFlow<TtsState> get() = _uiState
     
-    private val _events = MutableStateFlow<(TtsEvent) -> Unit> { }
-    val events = _events.asSharedFlow()
-    
     private var tts: TextToSpeech? = null
+    private var context: Context? = null
     
     init {
-        setupTts()
         loadHistory()
     }
     
+    fun setContext(context: Context) {
+        this.context = context
+        setupTts()
+    }
+    
     private fun setupTts() {
-        tts = TextToSpeech(context) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                tts?.let {
-                    it.language = Locale.getDefault()
+        context?.let { ctx ->
+            tts = TextToSpeech(ctx) { status ->
+                if (status == TextToSpeech.SUCCESS) {
+                    tts?.let {
+                        it.language = Locale.getDefault()
+                    }
+                    updateState { copy(isInitializing = false) }
+                } else {
+                    updateState { copy(isInitializing = false) }
                 }
-                updateState { copy(isInitializing = false) }
-            } else {
-                updateState { copy(isInitializing = false) }
             }
+            
+            tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                override fun onStart(utteranceId: String?) {
+                    updateState { copy(isSpeaking = true) }
+                }
+
+                override fun onDone(utteranceId: String?) {
+                    updateState { copy(isSpeaking = false) }
+                }
+
+                override fun onError(utteranceId: String?) {
+                    updateState { copy(isSpeaking = false) }
+                }
+            })
         }
-        
-        tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(utteranceId: String?) {
-                updateState { copy(isSpeaking = true) }
-            }
-
-            override fun onDone(utteranceId: String?) {
-                updateState { copy(isSpeaking = false) }
-            }
-
-            override fun onError(utteranceId: String?) {
-                updateState { copy(isSpeaking = false) }
-            }
-        })
     }
     
     fun onEvent(event: TtsEvent) {
@@ -72,7 +76,7 @@ class TtsViewModel(private val context: Context) : ViewModel() {
                     )
                     val newHistory = listOf(currentState.text) + currentState.history
                         .filter { it != currentState.text }
-                        .take(maxHistorySize - 1)
+                        .take(5)
                     updateState { copy(text = "", history = newHistory) }
                     saveHistory(newHistory)
                 }
@@ -87,7 +91,7 @@ class TtsViewModel(private val context: Context) : ViewModel() {
             }
             
             is TtsEvent.ClearHistory -> {
-                historyManager.clearHistory()
+                repository.clearHistory()
                 updateState { copy(history = emptyList()) }
             }
             
@@ -101,18 +105,12 @@ class TtsViewModel(private val context: Context) : ViewModel() {
     }
     
     private fun loadHistory() {
-        val history = historyManager.loadHistory()
+        val history = repository.loadHistory()
         updateState { copy(history = history) }
     }
     
     private fun saveHistory(history: List<String>) {
-        prefs.edit {
-            putInt("history_size", history.size)
-            history.forEachIndexed { index, phrase ->
-                putString("history_phrase_$index", phrase)
-            }
-            apply()
-        }
+        repository.saveHistory(history)
     }
     
     private fun updateState(update: TtsState.() -> TtsState) {
@@ -124,5 +122,23 @@ class TtsViewModel(private val context: Context) : ViewModel() {
         tts?.setOnUtteranceProgressListener(null)
         tts?.stop()
         tts?.shutdown()
+        tts = null
+        context = null
+    }
+}
+
+// Factory for creating ViewModel with repository
+class TtsViewModelProviderFactory(
+    private val context: Context
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(TtsViewModel::class.java)) {
+            val repository = TtsRepository(context)
+            val viewModel = TtsViewModel(repository)
+            viewModel.setContext(context)
+            @Suppress("UNCHECKED_CAST")
+            return viewModel as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
