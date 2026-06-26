@@ -1,1 +1,1 @@
-| ![Main screen Screenshot](screen.png) |
+| ![Main screen Screenshot](scr_shot.png) |
