@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">TTS - Text to Speech</string>
+    <string name="app_name_full">Text-to-Speech-Anwendung</string>
+    <string name="enter_text">Text eingeben</string>
+    <string name="placeholder_text">Text für die Sprachausgabe</string>
+    <string name="initialize">Initialisierung...</string>
+    <string name="speak">Vorlesen</string>
+    <string name="stop">Stopp</string>
+    <string name="clear_text">Text löschen</string>
+    <string name="clear_history">Verlauf löschen</string>
+    <string name="history">Verlauf</string>
+</resources>

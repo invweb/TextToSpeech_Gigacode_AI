@@ -1,3 +1,12 @@
 <resources>
-    <string name="app_name">Приложение для озвучки текста (TTS — Text-to-Speech)</string>
+    <string name="app_name">TTS - Text to Speech</string>
+    <string name="app_name_full">Приложение для озвучки текста (TTS — Text-to-Speech)</string>
+    <string name="enter_text">Введите текст</string>
+    <string name="placeholder_text">Текст для озвучивания</string>
+    <string name="initialize">Инициализация...</string>
+    <string name="speak">Озвучить</string>
+    <string name="stop">Стоп</string>
+    <string name="clear_text">Очистить текст</string>
+    <string name="clear_history">Очистить историю</string>
+    <string name="history">История</string>
 </resources>

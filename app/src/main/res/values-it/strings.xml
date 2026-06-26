@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">TTS - Text to Speech</string>
+    <string name="app_name_full">Applicazione per la sintesi vocale (TTS)</string>
+    <string name="enter_text">Inserisci il testo</string>
+    <string name="placeholder_text">Testo da sintetizzare</string>
+    <string name="initialize">Inizializzazione...</string>
+    <string name="speak">Leggi ad alta voce</string>
+    <string name="stop">Ferma</string>
+    <string name="clear_text">Cancella testo</string>
+    <string name="clear_history">Cancella cronologia</string>
+    <string name="history">Cronologia</string>
+</resources>
