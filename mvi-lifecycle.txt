@@ -1,0 +1,13 @@
+User Action (Клик)
+    ↓
+Intent (IncrementIntent)
+    ↓
+ViewModel.handleIntent()
+    ↓
+Repository (бизнес-логика)
+    ↓
+New State (CounterState)
+    ↓
+UI перерисовывается
+    ↓
+Effect (опционально - Toast, звук и т.д.)
